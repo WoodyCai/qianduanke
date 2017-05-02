@@ -1,0 +1,33 @@
+{
+  "name": "qianduanke",
+  "version": "1.0.0",
+  "description": "Front end technology study and some cases.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nibushixiaoyang/qianduanke.git"
+  },
+  "keywords": [
+    "html5",
+    "css3",
+    "javascript",
+    "ES6"
+  ],
+  "author": "Woody Cai",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nibushixiaoyang/qianduanke/issues"
+  },
+  "homepage": "https://github.com/nibushixiaoyang/qianduanke#readme",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^3.1.1",
+    "gulp-notify": "^3.0.0",
+    "gulp-plumber": "^1.1.0",
+    "gulp-sass": "^3.1.0",
+    "gulp-sourcemaps": "^2.6.0"
+  }
+}

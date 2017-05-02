@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>面向对象、继承自动播放的选项卡</title>
+    <style>
+        * { margin:0; padding: 0; }
+        .tabbox { width: 400px; height: 300px; margin:100px auto; }
+        .tabbox .tab-menu { height:50px; }
+        .tabbox .tab-menu input { float:left; width: 25%; height: 50px; line-height: 50px;color: #fff;   background: #604a50; }
+        .tabbox .tab-menu input.current { background: #db4f18; }
+        .tab-item-wrap { }
+        .tab-item-wrap div { display:none; width: 100%; height: 250px; font-size: 40px; background: #5fc9f5; }
+        .tab-item-wrap div.current { display: block; }
+    </style>
+</head>
+<body>
+    <div class='tabbox' id="tabbox01">
+        <div class="tab-menu">
+            <input class='current' type="button" value='按钮1' />
+            <input type="button" value='按钮2' />
+            <input type="button" value='按钮3' />
+            <input type="button" value='按钮4' />
+        </div>
+        <div class="tab-item-wrap">
+            <div class="current">内容1</div>
+            <div class="">内容2</div>
+            <div class="">内容3</div>
+            <div class="">内容4</div>
+        </div>
+    </div>
+
+    <div class='tabbox' id="tabbox02">
+        <div class="tab-menu">
+            <input class='current' type="button" value='按钮1' />
+            <input type="button" value='按钮2' />
+            <input type="button" value='按钮3' />
+            <input type="button" value='按钮4' />
+        </div>
+        <div class="tab-item-wrap">
+            <div class="current">内容1</div>
+            <div class="">内容2</div>
+            <div class="">内容3</div>
+            <div class="">内容4</div>
+        </div>
+    </div>
+
+
+</body>
+</html>
+<script>
+    // 选项卡
+    // 面向过程
+    // var oTab = document.getElementById('tabbox01');
+    // var arrMenu = document.getElementsByTagName('input');
+    // var arrTabItem = document.getElementsByClassName('tab-item-wrap')[0].getElementsByTagName('div');
+    // var iNow = 0;
+    //
+    // for(var i =0; i<arrMenu.length ; i++){
+    //     arrMenu[i].index = i;
+    //     arrMenu[i].onclick = function(){
+    //         iNow = this.index;
+    //         for( var m=0; m<arrMenu.length; m++){
+    //             arrMenu[m].className = ' ';
+    //             arrTabItem[m].className = ' ';
+    //         }
+    //         arrMenu[iNow].className = 'current';
+    //         arrTabItem[iNow].className = 'current';
+    //     }
+    // }
+
+    // 面向过程
+    // 选项卡父类
+    function Tab(id){
+        if(id){
+            this.oTab = document.getElementById(id);
+            this.arrMenu = this.oTab.getElementsByTagName('input');
+            this.arrItem = this.oTab.getElementsByClassName('tab-item-wrap')[0].getElementsByTagName('div');
+            this.iNow = 0;
+
+            var _this = this;
+            for( var i=0; i<this.arrMenu.length ; i++){
+                this.arrMenu[i].index = i;
+                this.arrMenu[i].onclick = function(){
+                    _this.iNow = this.index ;
+                    _this.fnTab();
+                }
+            }
+        }
+    }
+    Tab.prototype.fnTab = function(){
+        for(var i=0; i<this.arrMenu.length ; i++){
+            this.arrMenu[i].className = ' ';
+            this.arrItem[i].className = ' ';
+        }
+        this.arrMenu[this.iNow].className = 'current';
+        this.arrItem[this.iNow].className = 'current';
+    }
+
+    // 实例基础选项卡
+    var tab1 = new Tab('tabbox01');
+
+    // 自动切换的选项卡 子类
+    function AutoPlayTab(id){
+        // 继承父类属性
+        Tab.call(this,id);
+
+        var _this =this;
+        this.timer = null;
+        this.fnAutoPlay();
+
+        // 暂停
+        this.oTab.onmouseover = function(){
+            _this.fnClearAutoPlay();
+        }
+        // 恢复
+        this.oTab.onmouseout = function(){
+            _this.fnAutoPlay();
+        }
+
+    }
+    // 继承父类方法
+    AutoPlayTab.prototype = new Tab();
+    AutoPlayTab.prototype.constructor = AutoPlayTab;
+
+    // 自动切换
+    AutoPlayTab.prototype.fnAutoPlay = function(){
+        console.log('自动')
+        var _this = this;
+        this.timer = setInterval(function(){
+            if( _this.iNow < _this.arrMenu.length-1 ){
+                _this.iNow++;
+            }else{
+                _this.iNow = 0;
+            }
+            _this.fnTab();
+        },1000)
+    }
+    // 暂停
+    AutoPlayTab.prototype.fnClearAutoPlay = function(){
+        console.log('暂停')
+        clearInterval(this.timer);
+    }
+
+    // 实例自动切换选项卡
+    var tab2 = new AutoPlayTab('tabbox02');
+
+
+
+
+</script>

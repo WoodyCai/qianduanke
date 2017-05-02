@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>面向对象的拖拽、限定范围、透明拖拽</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .dragbox {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100px;
+            height: 100px;
+            background: #4162d1;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+        }
+
+        .dragbox img {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #dragbox02 {
+            top: 100px;
+            left: 100px;
+            background: #c2cc5b;
+        }
+
+        .dragbox03 {
+            top: 200px;
+            left: 200px;
+            background: #1e9fa4;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dragbox" id="dragbox01">affaf面向对象的基础拖拽</div>
+    <div class="dragbox" id="dragbox02">限定范围的拖拽</div>
+    <div class="dragbox dragbox03" id="dragbox03"><img src="./001.png" alt="" /></div>
+</body>
+
+</html>
+<script>
+    // 面向对象
+    function Drag(id) {
+        if (!id) {
+            return;
+        }
+        this.box = document.getElementById(id);
+        this.disX = 0;
+        this.disY = 0;
+        var _this = this;
+        this.box.onmousedown = function(ev) {
+            var oEvent = ev || event;
+            _this.mousedown(oEvent);
+            return false;
+        }
+    }
+    Drag.prototype.mousedown = function(ev) {
+        this.disX = ev.clientX - this.box.offsetLeft;
+        this.disY = ev.clientY - this.box.offsetTop;
+        var _this = this;
+        document.onmousemove = function(ev) {
+            var oEvent = ev || event;
+            _this.mousemove(oEvent);
+        }
+        document.onmouseup = function() {
+            _this.mouseup();
+        }
+        this.box.setCapture && this.box.setCapture();
+    }
+    Drag.prototype.mousemove = function(ev) {
+        this.box.style.left = ev.clientX - this.disX + "px";
+        this.box.style.top = ev.clientY - this.disY + "px";
+        this.box.releaseCapture && this.box.releaseCapture();
+    }
+    Drag.prototype.mouseup = function() {
+        document.onmousemove = null;
+        document.onmouseup = null;
+    }
+    // 限定范围的拖拽
+    function LimitDrag(id) {
+        // 继承父类属性
+        // Drag.call(this,id);
+        // Drag.apply(this,[id])
+        Drag.apply(this, arguments)
+    }
+    // 继承父类方法
+    LimitDrag.prototype = new Drag();
+    LimitDrag.prototype.constructor = LimitDrag;
+    var oldMouseMove = LimitDrag.prototype.mousemove;
+    LimitDrag.prototype.mousemove = function(ev) {
+        oldMouseMove.call(this, ev);
+        if (this.box.offsetLeft < 0) {
+            this.box.style.left = 0;
+        } else if (this.box.offsetLeft > document.documentElement.clientWidth - this.box.offsetWidth) {
+            this.box.style.left = document.documentElement.clientWidth - this.box.offsetWidth + 'px';
+        }
+        if (this.box.offsetTop < 0) {
+            this.box.style.top = 0;
+        } else if (this.box.offsetTop > document.documentElement.clientHeight - this.box.offsetHeight) {
+            this.box.style.top = document.documentElement.clientHeight - this.box.offsetHeight + 'px';
+        }
+    }
+    // 模拟系统的拖拽
+    function FrameDrag(id) {
+        LimitDrag.call(this, id);
+        this.oTmp = null;
+        this.oNewBox = null
+    }
+    FrameDrag.prototype = new LimitDrag();
+    FrameDrag.prototype.constructor = FrameDrag;
+    var arrOld = {};
+    for (var key in FrameDrag.prototype) {
+        arrOld[key] = FrameDrag.prototype[key];
+    }
+    FrameDrag.prototype.mousedown = function(ev) {
+        arrOld.mousedown.call(this, ev);
+        // console.log(this.box.innerHTML)
+        this.oNewBox = this.box.cloneNode(true);
+        this.oNewBox.id = '';
+        document.body.appendChild(this.oNewBox);
+        this.oNewBox.style.opacity = 0.5;
+        this.oTmp = this.box;
+        this.box = this.oNewBox;
+    }
+    FrameDrag.prototype.mouseup = function(ev) {
+        arrOld.mouseup.call(this);
+        this.oTmp.style.left = this.box.offsetLeft + 'px';
+        this.oTmp.style.top = this.box.offsetTop + 'px';
+        document.body.removeChild(this.box);
+        this.box = this.oTmp;
+        this.oTmp = null;
+    }
+
+
+    var drag1 = new Drag('dragbox01');
+    var drag2 = new LimitDrag('dragbox02');
+    var drag3 = new FrameDrag('dragbox03');
+</script>

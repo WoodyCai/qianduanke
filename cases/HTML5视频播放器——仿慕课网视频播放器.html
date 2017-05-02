@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta autor='Woody Cai' >
+    <title>HTML5视频播放器01——仿慕课网视频播放器(简易版)</title>
+    <style>
+        /*
+         *    Des     :HTML5视频播放器样式文件
+         *    Author  :Woody Cai
+         *    Time    :2017年04月26日10:26:52
+         */
+        /*iconfont*/
+        @font-face {
+            font-family: 'iconfont';  /* project id 287441 */
+            src: url('//at.alicdn.com/t/font_254lrhzdzi7zm2t9.eot');
+            src: url('//at.alicdn.com/t/font_254lrhzdzi7zm2t9.eot?#iefix') format('embedded-opentype'),
+            url('//at.alicdn.com/t/font_254lrhzdzi7zm2t9.woff') format('woff'),
+            url('//at.alicdn.com/t/font_254lrhzdzi7zm2t9.ttf') format('truetype'),
+            url('//at.alicdn.com/t/font_254lrhzdzi7zm2t9.svg#iconfont') format('svg');
+        }
+        .iconfont{
+            font-family:"iconfont" !important;
+            font-size:16px;font-style:normal;
+            -webkit-font-smoothing: antialiased;
+            -webkit-text-stroke-width: 0.2px;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        *{ margin:0; padding: 0; }
+        /* 全屏 */
+        html:-moz-full-screen { background: #000; }
+        html:-webkit-full-screen { background: #000; }
+        html:fullscreen { background: #000; }
+        a { text-decoration: none; }
+        .video-wrap { position: relative; width: 720px; height: 405px; overflow:hidden; margin:150px auto; background: #000;
+            display: -webkit-box; display: box;
+            display: flex; display: -webkit-flex;
+        }
+        .video-wrap .video { width: 100%; height: auto; display: block;
+            -webkit-box-flex:1; box-flex:1;
+            flex:1; -webkit-flex:1;
+        }
+        /*.video-wrap:hover .controls-bar{ bottom: 0; }*/
+        /* 控制条 */
+        .video-wrap .progress-min-bar { position:absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: #353b40; }
+        .video-wrap .progress-min-buffer { width:0; height: 4px; background: #4d5559;  transition:all 1s linear; -webkit-transition:all 1s linear; }
+        .video-wrap .progress-min-current { position: absolute; top: 0; left: 0; width:0; height: 4px; background: #f01414;  transition:all 1s linear; -webkit-transition:all 1s linear; }
+        .video-wrap .controls-bar { position: absolute; bottom: 0px; opacity:1; left:0; height: 40px; background: #000; width: 100%; color: #4d5559; line-height: 30px; font-size: 12px;  transition:all 0.2s linear; -webkit-transition:all 0.2s linear;}
+        .video-wrap .controls-bar .progress-bar { position: relative; width: 100%; height:10px; background: #353b40; }
+        .video-wrap .controls-bar .progress-buffer { width:0; height: 10px; background: #4d5559;  transition:all 1s linear; -webkit-transition:all 1s linear; }
+        .video-wrap .controls-bar .progress-current { position: absolute; top: 0; left: 0; width:0; height: 10px; background: #f01414;  transition:all 1s linear; -webkit-transition:all 1s linear; }
+        .video-wrap .controls-bar .progress-drag-btn { position: absolute; top:-3px; left: -8px; width: 16px; height: 16px; border-radius:50%; background: #fff; transition:all 1s linear; -webkit-transition:all 1s linear;  }
+        .video-wrap .controls-bar .control-btn { padding: 0 10px; }
+        .video-wrap .controls-bar .control-btn a { float: left; width: 20px; line-height: 30px; font-size: 20px; color: #4d5559; }
+        .video-wrap .controls-bar .control-btn a.current ,.video-wrap .controls-bar .control-btn a:hover { color: #f01414; }
+        .video-wrap .controls-bar .control-btn .play-time { float: left; width: 100px; margin-left: 10px; }
+        .video-wrap .controls-bar .control-btn .volume-edit { position: relative; float:right; margin-right: 10px; }
+        .video-wrap .controls-bar .control-btn .volume-edit .volume-bar { display: none; position: absolute; bottom:50px; left: 0px; background: #4d5559; width: 6px; border: 7px solid #353b40; height: 100px; }
+        .video-wrap .controls-bar .control-btn .volume-edit .volume-current { position: absolute; bottom: 0; left: 0; height: 50%; width:100%; background: #f01414; }
+        .video-wrap .controls-bar .control-btn .volume-edit .volume-drag-btn { position: absolute; top:-5px; left: -2px; width: 10px; height: 10px; border-radius:50%; background: #fff; }
+        .video-wrap .controls-bar .control-btn a.fullscreen-btn { float: right; }
+    </style>
+    <script>
+        window.onload = function(){
+            /*
+             *    Des     :HTML5视频播放器js文件
+             *    Author  :Woody Cai
+             *    Time    :2017年04月26日10:26:52
+             */
+            function CustomVideo(id){
+                var _this = this;
+                this.oVideoWrap = document.querySelector(id)
+                this.oVideo = this.oVideoWrap.querySelector('video');
+                // 播放、全屏
+                this.playBtn = this.oVideoWrap.querySelector('.play-btn');
+                this.fullscreenBtn = this.oVideoWrap.querySelector('.fullscreen-btn');
+                // 音量控制
+                this.volumeBtn = this.oVideoWrap.querySelector('.volume-btn');
+                this.volumeEdit = this.oVideoWrap.querySelector('.volume-edit');
+                this.volumeBar = this.oVideoWrap.querySelector('.volume-bar');
+                this.volumeCurrent = this.oVideoWrap.querySelector('.volume-current');
+                this.volumeDragBtn = this.oVideoWrap.querySelector('.volume-drag-btn');
+                this.volumeTimer = null;
+                // 视频时间
+                this.oCurrentTime = this.oVideoWrap.querySelector('.current-time');
+                this.iCurrentTime = 0;
+                this.oTotalTime = this.oVideoWrap.querySelector('.total-time');
+                this.iTotalTime = 0;
+                // 进度条
+                this.controlsBar = this.oVideoWrap.querySelector('.controls-bar');
+                this.progressBar = this.oVideoWrap.querySelector('.progress-bar');
+                this.progressCurrent = this.oVideoWrap.querySelector('.progress-current');
+                this.progressBuffer = this.oVideoWrap.querySelector('.progress-buffer');
+                this.iCoe = 0;        // 进度条移动系数
+                this.progressDragBtn = this.oVideoWrap.querySelector('.progress-drag-btn');
+                this.isTransition = true;  // 进度条移动动画效果
+                // 迷你进度条
+                this.progressMinBar = this.oVideoWrap.querySelector('.progress-min-bar');
+                this.progressMinCurrent = this.oVideoWrap.querySelector('.progress-min-current');
+                this.progressMinBuffer = this.oVideoWrap.querySelector('.progress-min-buffer');
+                this.controlsTimer = null;
+                this.bufferTimer = null;
+                // 状态
+                this.isPlay = false;
+                this.isMute = false;
+                this.timer = null;
+                this.isFullBtn = false;
+                // 视频盒子原先样式
+                this.oldWrapStyle = this.oVideoWrap.style;
+                // 初始化
+                this.init();
+                // 控制条显示、影藏
+                this.progressMinBar.onmouseover = this.controlsBar.onmouseover =  function(){
+                    _this.fnControlsShow();
+                }
+                this.progressMinBar.onmouseout = this.controlsBar.onmouseout = function(){
+                    _this.fnControlsHide();
+                }
+                // 播放点击
+                this.playBtn.onclick = function(){
+                    _this.fnPlay(this);
+                }
+                // 拖动进度条
+                this.progressDragBtn.onmousedown = function(ev){
+                    var oEvent = ev||event;
+                    _this.fnProgressDrag(this,ev);
+                    return false;
+                }
+                // 点击进度条
+                this.progressBar.onclick = function(ev){
+                    var oEvent = ev||event;
+                    _this.fnProgressClick(oEvent);
+                }
+                // 静音
+                this.volumeBtn.onclick = function(){
+                    _this.fnMute(this);
+                }
+                // 控制音量显示
+                this.volumeEdit.onmouseover = function(){
+                    _this.fnVolumeOver();
+                }
+                // 控制音量隐藏
+                this.volumeEdit.onmouseout = function(){
+                    _this.fnVolumeOut();
+                }
+                // 设置音量大小
+                this.volumeDragBtn.onmousedown = function(ev){
+                    var oEvent = ev||event;
+                    _this.fnVolumeDrag(this,ev);
+                    return false;
+                }
+                // 全屏
+                this.fullscreenBtn.onclick = function(){
+                    _this.fnFullscreen();
+                }
+                // 空格播放
+                document.onkeydown = function(ev){
+                    var oEvent = ev||event;
+                    if( oEvent.keyCode == 32){        // 空格
+                        _this.fnPlay(_this.playBtn);
+                    }
+                    return false;
+                }
+                document.addEventListener('fullscreenchange',function(){
+                },false)
+                document.addEventListener('webkitfullscreenchange',function(){
+                    _this.fnEnterExitFullScreen();
+                },false)
+
+            }
+            // 视频初始化-获取视频总时间
+            CustomVideo.prototype.init = function(){
+                var _this = this;
+                var timer = setInterval(function(){
+                    // 总时间
+                    _this.iTotalTime = parseInt(_this.oVideo.duration);
+                    _this.oTotalTime.innerHTML =  _this.timeConvert(_this.iTotalTime);
+                    if( _this.iTotalTime ){
+                        _this.fnInitInfo();
+                        clearInterval(timer);
+                    }
+                },1000)
+                // 初始化音量 0.5
+                this.oVideo.volume = 0.5;
+                this.volumeDragBtn.style.top= '45px';
+                this.volumeCurrent.style.height = '50px';
+                // this.oVideoWrap.style = this.oldWrapStyle;
+            }
+            // 总时间、系数、进度条长度确定
+            CustomVideo.prototype.fnInitInfo = function(){
+                var _this = this;
+                this.removeCss3Transition();
+                _this.iCoe = document.querySelector('.progress-bar').clientWidth/_this.iTotalTime;
+                this.progressTime();
+                this.bufferTimer = setInterval(function(){
+                    _this.progressBuffer.style.width = _this.progressMinBuffer.style.width = _this.iCoe*parseInt(_this.oVideo.buffered.end(0))+"px";
+                    if(parseInt(_this.oVideo.buffered.end(0)) == _this.iTotalTime){
+                        clearInterval(_this.bufferTimer);
+                    }
+                },1000);
+                setTimeout(function(){
+                    _this.addCss3Transition();
+                },50)
+            }
+            // 控制条显示
+            CustomVideo.prototype.fnControlsShow = function(){
+                clearTimeout(this.controlsTimer);
+                this.controlsBar.style.opacity = '1';
+                this.controlsBar.style.bottom = '0';
+            }
+            // 控制条隐藏
+            CustomVideo.prototype.fnControlsHide = function(){
+                var _this = this;
+                this.controlsTimer = setTimeout(function(){
+                    _this.controlsBar.style.opacity = '0';
+                    _this.controlsBar.style.bottom = '-40px';
+                },1500)
+            }
+            // 播放-时间进度变化
+            CustomVideo.prototype.changeTime = function(){
+                var _this = this;
+                this.progressTime();
+                this.timer = setInterval(function(){
+                    // 当前时间
+                    _this.progressTime();
+                    // 播放结束-清除定时器
+                    if( _this.oVideo.ended){
+                        clearInterval(_this.timer);
+                        _this.playBtn.innerHTML = '\&#xe6c6;';
+                        _this.isPlay = false;
+                    }
+                },1000)
+            }
+            // 时间进度变化
+            CustomVideo.prototype.progressTime = function(){
+                this.iCurrentTime = parseInt(this.oVideo.currentTime);
+                this.oCurrentTime.innerHTML = this.timeConvert(this.iCurrentTime);
+                this.progressCurrent.style.width = this.progressMinCurrent.style.width = this.iCoe*this.iCurrentTime+"px";
+                this.progressDragBtn.style.left = this.iCoe*this.iCurrentTime-8+"px";
+            }
+            // 进度条css3动画效果添加
+            CustomVideo.prototype.addCss3Transition = function(){
+                this.progressCurrent.style.transition ='all 1s linear';
+                this.progressCurrent.style.webkitTransition ='all 1s linear';
+                this.progressDragBtn.style.transition ='all 1s linear';
+                this.progressDragBtn.style.webkitTransition ='all 1s linear';
+            }
+            // 进度条css3动画效果删除
+            CustomVideo.prototype.removeCss3Transition = function(){
+                this.progressCurrent.style.transition ='none';
+                this.progressCurrent.style.webkitTransition ='none';
+                this.progressDragBtn.style.transition ='none';
+                this.progressDragBtn.style.webkitTransition ='none';
+            }
+            // 播放、暂停
+            CustomVideo.prototype.fnPlay = function(obj){
+                if( !this.isPlay ){        // 播放
+                    if( this.oVideo.ended ){    // 已经结束从头播放
+                        this.oVideo.currentTime = 0;
+                        this.progressTime();
+                    }
+                    this.oVideo.play();
+                    this.isPlay = true;
+                    this.changeTime();
+                    obj.innerHTML = '\&#xe68a;';
+                }else {                    // 暂停
+                    clearInterval(this.timer);
+                    this.oVideo.pause();
+                    this.isPlay = false;
+                    obj.innerHTML = '\&#xe6c6;';
+                }
+            }
+            // 秒时间转换00:00
+            CustomVideo.prototype.timeConvert = function(time){
+                var iMinute = parseInt(parseInt(time)/60)>9?parseInt(parseInt(time)/60):'0'+parseInt(parseInt(time)/60);
+                var iSecond = parseInt(time)%60>9?parseInt(time)%60:'0'+parseInt(time)%60;
+                return iMinute+":"+iSecond;
+            }
+            // 拖动进度条按钮
+            CustomVideo.prototype.fnProgressDrag = function(obj,ev){
+                this.removeCss3Transition();    // 清除进度条运动动画效果
+                var diffX = ev.clientX - obj.offsetLeft;
+                var _this = this;
+                document.onmousemove = function(ev){
+                    var oEvent = ev||event;
+                    obj.style.left = ev.clientX-diffX+"px";
+                    // 限定范围
+                    if( obj.offsetLeft < -8 ){
+                        obj.style.left= '-8px';
+                    }else if ( obj.offsetLeft > document.querySelector('.progress-bar').clientWidth-8 ){
+                        obj.style.left= document.querySelector('.progress-bar').clientWidth-8+'px';
+                    }
+                    // 根据移动位置计算currentTime时间
+                    _this.oVideo.currentTime = (obj.offsetLeft+8)/_this.iCoe;
+                    _this.progressTime()
+
+                }
+                document.onmouseup = function(){
+                    _this.addCss3Transition();     // 恢复进度条运动动画效果
+                    document.onmousemove = null;
+                    document.onmouseup = null;
+                }
+            }
+            // 进度条点击
+            CustomVideo.prototype.fnProgressClick = function(ev){
+                var _this = this;
+                this.removeCss3Transition();    // 清除进度条运动动画效果
+                this.progressDragBtn.style.left = ev.clientX - this.oVideoWrap.offsetLeft-8+'px';
+                this.oVideo.currentTime = (this.progressDragBtn.offsetLeft+8)/this.iCoe;
+                this.progressTime();
+                setTimeout(function(){         // 恢复进度条运动动画效果
+                    _this.addCss3Transition();
+                },50)
+            }
+            // 静音
+            CustomVideo.prototype.fnMute = function(obj){
+                if( !this.oVideo.muted ){        // 设置静音
+                    this.oVideo.muted = true;
+                    obj.innerHTML = '\&#xe611;';
+                }else {                          // 取消静音
+                    if( this.oVideo.volume == 0 ){        // 音量为0时、设置音量为0.3
+                        this.oVideo.volume = 0.3;
+                        this.volumeDragBtn.style.top= "65px";
+                        this.volumeCurrent.style.height ='30px';
+                    }
+                    this.oVideo.muted = false;
+                    obj.innerHTML = '\&#xe637;';
+                }
+            }
+            // 调节音量大小显示
+            CustomVideo.prototype.fnVolumeOver = function(){
+                clearTimeout(this.volumeTimer);
+                this.volumeBar.style.display = 'block';
+            }
+            // 调节音量大小隐藏
+            CustomVideo.prototype.fnVolumeOut = function(){
+                var _this = this;
+                this.volumeTimer = setTimeout(function(){
+                    _this.volumeBar.style.display = 'none';
+                },500)
+            }
+            // 拖动音量条按钮
+            CustomVideo.prototype.fnVolumeDrag = function(obj,ev){
+                var diffY = ev.clientY - obj.offsetTop;
+                var _this = this;
+                document.onmousemove = function(ev){
+                    var oEvent = ev||event;
+                    obj.style.top= ev.clientY-diffY+"px";
+                    if( obj.offsetTop < -5 ){
+                        obj.style.top= '-5px';
+                    }else if ( obj.offsetTop > 100-5 ){
+                        obj.style.top= '95px';
+                    }
+                    _this.oVideo.volume = (100-(obj.offsetTop+5))/100;
+                    _this.volumeCurrent.style.height = 100-(obj.offsetTop+5)+'px';
+                    if( !_this.oVideo.volume ){        // 设置静音
+                        _this.oVideo.muted = true;
+                        _this.volumeBtn.innerHTML = '\&#xe611;';
+                    }else {                          // 取消静音
+                        _this.oVideo.muted = false;
+                        _this.volumeBtn.innerHTML = '\&#xe637;';
+                    }
+                }
+                document.onmouseup = function(){
+                    document.onmousemove = null;
+                    document.onmouseup = null;
+                }
+            }
+            // 全屏设置-利用浏览器自带的全屏功能-让视频fixed 占满全屏
+            CustomVideo.prototype.fnFullscreen = function(){
+                this.isFullBtn = true;
+                if(!(document.fullscreenEnabled||window.fullScreen||document.webkitIsFullScreen||document.msFullscreenEnabled) ){        // 进入全屏
+                    // 进入全屏
+                    if(document.documentElement.requestFullscreen) {
+                       document.documentElement.requestFullscreen();
+                     } else if(document.documentElement.mozRequestFullScreen) {
+                       document.documentElement.mozRequestFullScreen();
+                     } else if(document.documentElement.webkitRequestFullscreen) {
+                       document.documentElement.webkitRequestFullscreen();
+                     } else if(document.documentElement.msRequestFullscreen) {
+                       document.documentElement.msRequestFullscreen();
+                     }
+                }else {                           // 推出全屏
+                    if(document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if(document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if(document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
+                }
+            }
+            // 进入、推出全屏
+            CustomVideo.prototype.fnEnterExitFullScreen = function(){
+                if(document.fullscreenEnabled||window.fullScreen||document.webkitIsFullScreen||document.msFullscreenEnabled){
+                    this.fnEnterFullScreen();
+                }else {
+                    this.fnExitFullScreen();
+                };
+            }
+            // 进入全屏
+            CustomVideo.prototype.fnEnterFullScreen = function(){
+                // 设置样式
+                this.fullscreenBtn.innerHTML = '\&#xe60d;';
+                document.documentElement.style.overflow = 'hidden';        // 取消滚动条
+                this.oVideoWrap.style.position = 'fixed';                  // 设置Video盒子样式
+                this.oVideoWrap.style.top = 0;
+                this.oVideoWrap.style.left = 0;
+                this.oVideoWrap.style.margin = 0;
+                this.oVideoWrap.style.width = document.documentElement.clientWidth+'px';
+                this.oVideoWrap.style.height = '100%';
+                this.fnInitInfo();
+            }
+            // 推出全屏
+            CustomVideo.prototype.fnExitFullScreen = function(){
+                // 设置样式
+                this.fullscreenBtn.innerHTML = '\&#xe601;';
+                document.documentElement.style.overflow = 'auto';        // 取消滚动条
+                this.oVideoWrap.style = this.oldWrapStyle;
+                this.fnInitInfo();
+            }
+
+            // 实例视频
+            new CustomVideo('#video-wrap');
+        }
+    </script>
+</head>
+<body>
+    <div class="video-wrap" id="video-wrap">
+        <img class='poster-img' src="" alt="">
+        <video class='video' src='./images/mivan.mp4' preload></video>
+        <!-- 迷你进度条 -->
+        <div class="progress-min-bar">
+            <div class="progress-min-buffer"></div>
+            <div class="progress-min-current"></div>
+        </div>
+        <!-- 控制条 -->
+        <div class="controls-bar">
+            <div class="progress-bar">
+                <div class="progress-buffer"></div>
+                <div class="progress-current"></div>
+                <a href="javascript:;" class="progress-drag-btn"></a>
+            </div>
+            <div class='control-btn'>
+                <a href="javascript:;" class="play-btn iconfont current">&#xe6c6;</a>
+                <p class="play-time"><span class="current-time">00:00</span> / <span class="total-time">00:00</span></p>
+                <a href="javascript:;" class='fullscreen-btn iconfont'>&#xe601;</a>
+                <div class="volume-edit">
+                    <a href="javascript:;" class='volume-btn iconfont'>&#xe637;</a>
+                    <div class="volume-bar">
+                        <div class="volume-current"></div>
+                        <a href="javascript:;" class="volume-drag-btn"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
