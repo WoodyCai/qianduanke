@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>temp</title>
+</head>
+<body>
+    <canvas id='cv' width="600" height="600"></canvas>
+    <script type="text/javascript">
+        var oCv=document.querySelector('#cv');
+
+        let gd = oCv.getContext('2d');
+
+        gd.moveTo(300,300);
+        gd.lineTo(300,100);
+
+        gd.arc(300,300,200,-90*Math.PI/180,0,false);
+        gd.closePath();
+        gd.stroke();
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta autor='Woody Cai' >
+    <title>图片上传预览</title>
+    <style>
+        /*
+         *    Des     :面试题
+         *    Author  :Woody Cai
+         *    Time    :2017年04月28日15:51:41
+         */
+    </style>
+    <script>
+
+
+        // 数组删除重复
+        Array.prototype.delRepeat = function(){
+            var ret = [];
+            for( var i=0; i<this.length; i++){
+                for( var m=i+1; m<this.length; m++){
+                    if(this[i] === this[m]){
+                        ret.push(this.splice(m,1)[0]);
+                    }
+                }
+            }
+            return ret;
+        }
+        var arr = ['a','b','c','d','b','a','a','e'];
+        console.log(arr.delRepeat());
+
+        // 数组从小到大排列
+        function mySort() {
+            var arr = [];
+            // for(var i=0; i<arguments.length; i++){
+            //     arr.push(arguments[i]);
+            // }
+            // 把所有参数传入arr中
+            arr = Array.prototype.slice.call(arguments,0);
+            var tags = arr.sort(function(a,b){return a-b});
+            return tags;//返回已经排序的数组
+        }
+        console.log(mySort(50,11,16,32,24,99,57,100));
+        // var result = mySort(50,11,16,32,24,99,57,100);/传入参数个数不确定
+        // console.info(result);//显示结果
+        // 登录验证
+        console.log([50,11,16,3].slice(1));
+
+        // 用户登录验证
+
+    </script>
+</head>
+<body>
+    <form action="">
+        用户名：<input type="text" name='user' /> <br>
+        <input type="button" name="登录" />
+    </form>
+</body>
+</html>

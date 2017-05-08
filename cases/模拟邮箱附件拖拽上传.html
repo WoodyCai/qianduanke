@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta autor='Woody Cai' >
+    <title>模拟邮箱附件拖拽上传</title>
+    <style>
+        /*
+         *    Des     :模拟邮箱附件拖拽上传
+         *    Author  :Woody Cai
+         *    Time    :2017年04月28日15:51:41
+         */
+        /*iconfont*/
+        @font-face {
+            font-family: 'iconfont';  /* project id 287441 */
+            src: url('//at.alicdn.com/t/font_254lrhzdzi7zm2t9.eot');
+            src: url('//at.alicdn.com/t/font_254lrhzdzi7zm2t9.eot?#iefix') format('embedded-opentype'),
+            url('//at.alicdn.com/t/font_254lrhzdzi7zm2t9.woff') format('woff'),
+            url('//at.alicdn.com/t/font_254lrhzdzi7zm2t9.ttf') format('truetype'),
+            url('//at.alicdn.com/t/font_254lrhzdzi7zm2t9.svg#iconfont') format('svg');
+        }
+        .iconfont{
+            font-family:"iconfont" !important;
+            font-size:16px;font-style:normal;
+            -webkit-font-smoothing: antialiased;
+            -webkit-text-stroke-width: 0.2px;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        *{ margin:0; padding: 0; }
+        a { text-decoration: none; }
+        /* 模拟邮箱附件拖拽上传 */
+        h1 { text-align: center; margin:40px auto; }
+        #drag-box { display: none; border:1px dashed #999; width: 500px; height: 200px; margin: 0 auto; }
+    </style>
+    <script>
+        window.onload = function(){
+            /*
+             *    Des     :模拟邮箱附件拖拽上传
+             *    Author  :Woody Cai
+             *    Time    :2017年04月28日15:51:41
+             */
+            var oDragBox = document.querySelector('#drag-box');
+            var timer = null;
+            // 文件拖入浏览器
+            document.ondragover = function(){
+                clearTimeout(timer);
+                oDragBox.style.display = 'block';
+                // 阻止浏览器默认事件
+                return false;
+            }
+            // 文件拖出浏览器
+            document.ondragleave = function(){
+                timer = setTimeout(function(){
+                    oDragBox.style.display = 'none';
+                },60)
+            }
+            //阻止冒泡
+            // oDragBox.ondragleave=function(ev){
+            //    ev.cancelBubble=true;
+            // };
+            // 阻止浏览器默认事件
+            document.ondrop = oDragBox.ondragover = function(){
+                return false;
+            }
+            // 拖入文件框
+            oDragBox.ondragenter = function(){
+                oDragBox.style.background = '#f1f1f1';
+            }
+            // 拖出文件框
+            oDragBox.ondragleave = function(){
+                oDragBox.style.background = 'none';
+            }
+            // 文件释放
+            oDragBox.ondrop = function(ev){
+                console.log(11)
+                // 释放的文件
+                var oFile=ev.dataTransfer.files[0];
+                // 文件读取
+                var reader = new FileReader();
+                // 判断文件格式
+                console.log(oFile.type)
+
+
+                // 使用base-64编码文件
+                reader.readAsDataURL(oFile);
+                // 读取成功
+                reader.onload = function(ev){
+                    // console.log(this.result)
+                }
+                return false;
+            }
+            // document.ondragover=function(){
+            //     clearTimeout(timer);
+            //     oBox.style.display='block';
+            //
+            //     timer=setTimeout(function(){
+            //         oBox.style.display='none';
+            //     },200);
+            // };
+            //
+            // oBox.ondragenter=function(){
+            //     oBox.innerHTML='释放鼠标!';
+            // };
+            // oBox.ondragleave=function(){
+            //     oBox.innerHTML='请将文件拖到此区域!';
+            // };
+
+
+            // oDragBox.ondragover = function(){
+            //     oDragBox.style.background = '#f1f1f1';
+            // }
+
+
+            // new UploaderImg('.upload-img')
+        }
+    </script>
+</head>
+<body>
+    <h1>请从桌面拖动文件到浏览器中</h1>
+    <div id="drag-box">
+        <div class="drag-item drag-item-img">
+            <i></i>
+            <h2>保养说明(1).box</h2>
+            <p><span>12.86K</span><span>2016-24-05</span></p>
+        </div>
+    </div>
+
+</body>
+</html>

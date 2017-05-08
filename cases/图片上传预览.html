@@ -31,15 +31,13 @@
         *{ margin:0; padding: 0; }
         a { text-decoration: none; }
         /* 图片上传预览 */
-        .uploader-img { margin:150px auto; width: 200px; height: 200px; padding: 10px; border: 1px solid #ccc; box-shadow:5px 5px 5px rgba(0,0,0,0.2); font-size:14px; }
-        .uploader-img .img-preview { display:block; width: 100%; height: 170px; border: 1px solid #ddd; padding:2px; box-sizing: border-box; -webkit-box-sizing: border-box; line-height: 160px; text-align: center; }
-        .uploader-img img { display: inline-block; max-width: 100%; max-height: 100%; vertical-align: middle; }
-        .uploader-img .uploader-btn { height: 30px; width: 100%; line-height: 30px; }
-        .uploader-img .uploader-btn label { float:left; height: 30px; width: 50%; background: #1544be; color: #fff; text-align: center; }
-        .uploader-img .uploader-btn .cancel { float:left; height: 30px; width: 50%; background: #999; color: #fff; text-align: center; }
-        .uploader-img label { }
-        .uploader-img .cancel {  }
-        .uploader-img input { height: 40px; }
+        .upload-img { margin:150px auto; width: 200px; height: 200px; padding: 10px; border: 1px solid #ccc; box-shadow:5px 5px 5px rgba(0,0,0,0.2); font-size:14px; }
+        .upload-img .img-preview { display:block; width: 100%; height: 170px; border: 1px solid #ddd; padding:2px; box-sizing: border-box; -webkit-box-sizing: border-box; line-height: 160px; text-align: center; }
+        .upload-img img { display: inline-block; max-width: 100%; max-height: 100%; vertical-align: middle; }
+        .upload-img .upload-action { height: 30px; width: 100%; line-height: 30px; }
+        .upload-img .upload-action .upload-btn { float:left; height: 30px; width: 50%; background: #1544be; color: #fff; text-align: center; }
+        .upload-img .upload-action .cancel { float:left; height: 30px; width: 50%; background: #999; color: #fff; text-align: center; }
+        .upload-img input { display:none; }
     </style>
     <script>
         window.onload = function(){
@@ -50,21 +48,63 @@
              */
             function UploaderImg(ele){
                 var _this = this;
-                this.o
+                this.oWrap = document.querySelector(ele);
+                this.inputFile = this.oWrap.querySelector('.input-file');
+                this.inputBtn = this.oWrap.querySelector('.upload-btn');
+                this.oPreImg = this.oWrap.querySelector('img');
 
+                // this.oWrap.style.background = '#f00';
+                this.inputBtn.onclick = function(ev){
+                    _this.fnUploadClick();
+                }
+                this.inputFile.onchange = function(ev){
+                    var oEvent = ev||event;
+                    _this.fnInputChange(oEvent);
+                }
             }
-            new UploaderImg('.uploader-img')
+            UploaderImg.prototype.fnUploadClick = function(){
+                // 触发input点击事件
+                this.inputFile.click();
+            }
+            UploaderImg.prototype.fnInputChange = function(ev){
+                var _this = this;
+                // 上传文件对象
+                var oFile = ev.target.files[0];
+                // 判断是否是图片
+                if(!/image/.test(oFile.type)){
+                    alert('请上传图片！')
+                    return ;
+                }
+                var reader = new FileReader();
+                // 使用base-64编码文件
+                reader.readAsDataURL(oFile);
+                // 文件上传完毕
+                reader.onload = function(ev){
+                    // 预览图
+                    _this.oPreImg.src = this.result;
+                    // ajax 上传图片
+                    // $.post("server.php", { img: e.target.result},function(ret){
+                    //     if(ret.img!=''){
+                    //         alert('upload success');
+                    //         $('#showimg').html('<img src="' + ret.img + '">');
+                    //     }else{
+                    //         alert('upload fail');
+                    //     }
+                    // },'json');
+                }
+            }
+            new UploaderImg('.upload-img')
         }
     </script>
 </head>
 <body>
-    <div class="uploader-img">
+    <div class="upload-img">
         <div class="img-preview"><img src='./images/image-default.png' /></div>
-        <div class="uploader-btn">
-            <label for="">上传图片</label>
+        <div class="upload-action">
+            <a href="javascript:;" class="upload-btn">上传图片</label>
             <a class='cancel' href="javascript:;">取 消</a>
         </div>
-        <input type="file" value="上传图片" />
+        <input class='input-file' type="file" value="上传图片" />
     </div>
 
 </body>
