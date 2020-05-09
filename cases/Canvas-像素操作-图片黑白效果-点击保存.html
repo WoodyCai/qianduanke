@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta autor='Woody Cai' >
+    <title>Canvas-像素操作-图片黑白效果-点击保存</title>
+    <style>
+        /*
+         *    Des     :Canvas-像素操作-图片黑白效果-点击保存
+         *    Author  :Woody Cai
+         *    Time    :2017年04月28日15:51:41
+         */
+         .canvas-wrap { width: 502px; margin: 0 auto; }
+         .source-number { width: 100%; border: 1px solid #ccc; line-height: 30px; font-size: 16px; color: #666; padding: 10px; box-sizing: border-box; }
+         #canvas {margin-top:10px; background: #fff; border: 1px solid #41ab82; }
+    </style>
+    <script>
+        window.onload = function(){
+            /*
+             *    Des     :Canvas-像素操作-图片黑白效果-点击保存
+             *    Author  :Woody Cai
+             *    Time    :2017年04月28日15:51:41
+             */
+             // 图片上传
+             var oUpload = document.querySelector('.img-upload');
+             oUpload.onchange = function(ev){
+                 var oFile = ev.target.files[0];
+                 // 判断文件是否为图片
+                 if( !/image/.test(oFile.type) ){
+                     alert('请上传图片文件');
+                     return ;
+                 }
+                 // 读取文件
+                 var reader = new FileReader();
+                 // 使用base64读取文件
+                 reader.readAsDataURL(oFile);
+                 reader.onload = function(ev){
+                     fnDrawImage(this.result);
+                 }
+             }
+
+            // 画饼图函数
+            var oC = document.querySelector('#canvas');
+            function fnDrawImage(url){
+
+                var gd = oC.getContext('2d');
+
+                // 清除画面
+                gd.clearRect(0,0,oC.width,oC.height);
+                var oImg = new Image();
+                oImg.src = url;
+
+                oImg.onload = function(){
+                    // 图片宽高比例
+                    var iRatio = oImg.width/oImg.height;
+                    // 画布上定位的起始坐标和宽高度
+                    var dX,dY,dWdith,dHeight;
+                    if( oImg.width > oC.width || oImg.height >oC.height ){
+                        // 图片宽度大于画布宽度或图片高度大于画布高度
+                        if( iRatio > 1){
+                            // 图片宽度大于高度
+                            dX = 0;
+                            dWidth = oC.width;
+                            dHeight = dWidth/iRatio;
+                            dY = (oC.height-dHeight)/2 ;
+                        }else {
+                            // 图片宽度小于等于高度
+                            dY = 0;
+                            dHeight = oC.height;
+                            dWidth = dHeight*iRatio;
+                            dX = (oC.width-dWidth)/2 ;
+                        }
+                    }else{
+                        // 图片宽度、高度小于画布宽度、高度
+                        dWidth = oImg.width;
+                        dHeight = oImg.height;
+                        dX = (oC.width-dWidth)/2;
+                        dY = (oC.height-dHeight)/2 ;
+                    }
+                    // 画出图片
+                    gd.drawImage(
+                        oImg,
+                        0,0,oImg.width,oImg.height,
+                        dX,dY,dWidth,dHeight
+                    );
+                    // 获取画布上指定矩形的像素数据
+                    var imgData = gd.getImageData(dX,dY,dWidth,dHeight);
+                    // 把所有的像素换成灰色,每个像素对应RGBA四个数据（每个值都是0~255）,所以length是像素数量的四倍
+                    for(var i=0; i<imgData.data.length; i+=4 ){
+                        // imgData.data[i] = imgData.data[i+1] = imgData.data[i+2] = (imgData.data[i]+imgData.data[i+1]+imgData.data[i+2])/3;
+                        imgData.data[i] = imgData.data[i+1] = imgData.data[i+2] = imgData.data[i]*0.3 + imgData.data[i+1]*0.6 + imgData.data[i+2]*0.1;
+                    }
+                    gd.putImageData(imgData,dX,dY);
+
+                    /* 图片下载 */
+                    // 以base64格式把画布里面的图案变成图片
+                    // var strDataURL = oC.toDataURL(‘image/jpeg’);
+                }
+            }
+
+            // 图片下载
+            var downloadBtn = document.querySelector('.img-download');
+            downloadBtn.onclick = function(){
+                download('png')
+                return false;
+            }
+            // 图片保存
+            function download(type) {
+                //设置保存图片的类型
+                var imgdata = oC.toDataURL(type);
+                //将mime-type改为image/octet-stream,强制让浏览器下载
+                var fixtype = function (type) {
+                    type = type.toLocaleLowerCase().replace(/jpg/i, 'jpeg');
+                    var r = type.match(/png|jpeg|bmp|gif/)[0];
+                    return 'image/' + r;
+                }
+                imgdata = imgdata.replace(fixtype(type), 'image/octet-stream')
+                //将图片保存到本地
+                var filename = new Date().toLocaleDateString() + '.' + type;
+                var saveFile = function (data, filename) {
+                    var link = document.createElement('a');
+                    link.href = data;
+                    link.download = filename;
+                    var event = document.createEvent('MouseEvents');
+                    event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                    link.dispatchEvent(event);
+                }
+                saveFile(imgdata, filename);
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="canvas-wrap">
+        <input class='img-upload' type="file" />
+        <input class='img-download' type="button" value="下载图片" />
+        <canvas id="canvas" width="500" height="500"></canvas>
+    </div>
+
+</body>
+</html>

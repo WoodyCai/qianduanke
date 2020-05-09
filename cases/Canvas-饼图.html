@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta autor='Woody Cai' >
+    <title>Canvas-饼图</title>
+    <style>
+        /*
+         *    Des     :Canvas-饼图
+         *    Author  :Woody Cai
+         *    Time    :2017年04月28日15:51:41
+         */
+         .canvas-wrap { width: 502px; margin: 0 auto; }
+         .source-number { width: 100%; border: 1px solid #ccc; line-height: 30px; font-size: 16px; color: #666; padding: 10px; box-sizing: border-box; }
+         #canvas {margin-top:10px; background: #fff; border: 1px solid #41ab82; }
+    </style>
+    <script>
+        window.onload = function(){
+            /*
+             *    Des     :Canvas-饼图
+             *    Author  :Woody Cai
+             *    Time    :2017年04月28日15:51:41
+             */
+
+            // 画饼图函数
+            function fnDrawPie(a){
+                // 把所有接受到的参数，整理成数组
+                // var arr = Array.prototype.slice.call(arguments,0);
+                var arr = a;
+                var aColor = ['#d0f56e','#4beed1','#5aa8ad','#1a783d','#2849d4','#32ad25','#862a94','#34427a','#dd3914'];
+                var r = 200,    // 半径
+                    cirX = 250,    // 圆心
+                    cirY = 250;
+
+                // 获取各个数值的和
+                var iTotal = 0;
+                for(var i=0; i<arr.length; i++){
+                    iTotal+=arr[i];
+                }
+                // 获取每个数值对应的弧度
+                var arrAngle = [0];
+                for(var i=0; i<arr.length; i++){
+                    arrAngle.push((arr[i]/iTotal)*2*Math.PI+arrAngle[i]);
+                }
+
+                // 创建画图
+                var oC = document.querySelector('#canvas'),
+                    gd = oC.getContext('2d');
+                    gd.clearRect(0,0,500,500);
+                // 画出每个弧度对应的扇形
+                function fnDrawSector(i){
+                    var startX = cirX+r*Math.sin(arrAngle[i]),
+                        sTartY = cirY-r*Math.cos(arrAngle[i]),
+                        endX = cirX+r*Math.sin(arrAngle[i+1]),
+                        endY = cirY-r*Math.cos(arrAngle[i+1]);
+
+                    gd.beginPath();
+                    gd.moveTo(cirX,cirY);
+                    gd.lineTo(startX,sTartY);
+                    // 圆的的起始角度从左侧开始的，要减去90度的弧度
+                    gd.arc(cirX,cirY,r,arrAngle[i]-90*Math.PI/180,arrAngle[i+1]-90*Math.PI/180,false);
+                    gd.closePath();
+                    gd.fillStyle = aColor[i];
+                    gd.fill();
+                }
+                for( var i=0; i<arrAngle.length-1 ;i++){
+                    fnDrawSector(i);
+                }
+            }
+            fnDrawPie([15,20,30,78,100]);
+
+            // input输入生成饼图
+            var oInput = document.querySelector('.source-number');
+
+
+            // 回车键生成饼图
+            document.onkeydown = function(ev){
+                if (ev.keyCode == 13){
+                    var arrSource = [],
+                        arrNum = [];
+                    if( !oInput.value.split(',')[0] ){
+                        alert('请按照规定格式输入')
+                    }else{
+                        arrSource = oInput.value.split(',');
+                        for( var i=0; i<arrSource.length ; i++){
+                            if( parseFloat(arrSource[i]) ){
+                                arrNum.push(parseFloat(arrSource[i]));
+                            }else {
+                                alert('请输入有效的数字');
+                                return ;
+                            }
+                        }
+                        // 画饼图
+                        fnDrawPie(arrNum);
+                    };
+                }
+            }
+
+        }
+    </script>
+</head>
+<body>
+    <div class="canvas-wrap">
+        <input class='source-number' type="text" placeholder="请输入饼图各部分的数字值，用逗号隔开,回车生成饼图" />
+        <canvas id="canvas" width="500" height="500"></canvas>
+    </div>
+</body>
+</html>

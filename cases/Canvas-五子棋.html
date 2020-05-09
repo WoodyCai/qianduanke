@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta autor='Woody Cai' >
+    <title>Canvas-五子棋</title>
+    <style>
+        /*
+         *    Des     :Canvas-五子棋
+         *    Author  :Woody Cai
+         *    Time    :2017年04月28日15:51:41
+         */
+         #canvas { margin:0 auto; display: block; margin-top:10px; background: #fff;  box-shadow:2px 2px 5px rgba(0,0,0,0.5);  }
+    </style>
+    <script>
+        window.onload = function(){
+            /*
+             *    Des     :Canvas-五子棋
+             *    Author  :Woody Cai
+             *    Time    :2017年04月28日15:51:41
+             */
+
+             /*
+              *  UI 部分
+              *  画棋盘、棋子、落棋子
+              */
+
+            var chess = document.querySelector('#canvas'),
+                context = chess.getContext('2d');
+
+            // 画棋盘 棋盘15*15 四周padding15px,棋格大小30px
+            function drawChess(){
+                context.strokeStyle = '#ccc';
+                for( var i=0; i<15 ; i++){
+                    // 横向的线
+                    context.moveTo(15,15+30*i);
+                    context.lineTo(435,15+30*i);
+                    context.stroke();
+                    // 纵向的线
+                    context.moveTo(15+30*i,15);
+                    context.lineTo(15+30*i,435);
+                    context.stroke();
+                }
+                // 写 水印文字
+                context.font = '90px 微软雅黑';
+                context.strokeText('五子棋',90,225)
+            }
+            drawChess();
+
+            // 记录棋盘坐标的落子状态，0表示未落子，1代表黑子，2代表白子
+            var arrChess = [];
+            // 初始化棋盘坐标状态
+            for( var i=0; i<15 ; i++){
+                arrChess[i] = [];
+                for( var j=0; j<15;j++){
+                    arrChess[i][j] = 0;
+                }
+            }
+            var me = true;  // true代表玩家下棋，false代表电脑下棋
+            // 棋盘点击
+            chess.onclick = function(ev){
+                // 获取鼠标点击位于棋盘的坐标值
+                var x = Math.floor(ev.offsetX/30);
+                var y = Math.floor(ev.offsetY/30);
+                // 判断是否可以落子
+                if(!arrChess[x][y]){
+                    drawPiece(x,y,me);
+                    me = !me ;   // 更改me状态，变换玩家
+                }
+            }
+
+            // 画棋子
+            function drawPiece(x,y,me){
+                context.beginPath();
+                context.arc(x*30+15,y*30+15,12,0,2*Math.PI,false);
+                context.closePath();
+                // 棋子颜色 渐变色
+                var grd = context.createRadialGradient(x*30+15,y*30+15,3,x*30+15,y*30+15,12);
+                if(me){
+                    // 黑棋子，我方
+                    grd.addColorStop(0,'#666');
+                    grd.addColorStop(1,'#111');
+                    // 更改棋盘坐标落子状态
+                    arrChess[x][y] = 1;
+                }else {
+                    // 白棋子，计算机方
+                    grd.addColorStop(0,'#fff');
+                    grd.addColorStop(1,'#ccc');
+                    // 更改棋盘坐标落子状态
+                    arrChess[x][y] = 2;
+                }
+                context.fillStyle = grd ;
+                context.fill();
+            }
+
+            /*
+             *  AI 部分
+             *  1、统计所有五子棋赢得情况
+             *  2、
+             */
+            // 统计所有五子棋赢得情况   分为横向、纵向、正斜、反斜四大类情况，每个方向上只要有五个同颜色的子相邻 就算成功
+            function fnAllWins(){
+                var arrAllWins = [],        // 三维数组
+                    iCounts = 0;
+
+                // 把arrAllWins 初始化成一个三维数组
+                for( var i=0; i<15 ; i++){
+                    arrAllWins[i] = [];
+                    for( var j=0; j<15;j++){
+                        arrAllWins[i][j] = [];
+                    }
+                }
+
+                // 横向的赢法
+                // 第0条线上所有赢得情况  i=0,j<15
+                for(var j=0; j<11 ;j++){
+                    for( var k=0; k<5 ; k++){
+                        arrAllWins[0][j+k][iCounts] = true;
+                    }
+                    iCounts++;
+                }
+
+                // 横向的赢法
+                for( var i=0; i<15 ; i++){
+                    for( var j=0; j<11 ; j++){
+                        for( var k=0; k<5; k++){
+                            arrAllWins[i][j+k][iCounts] = true;
+                        }
+                        iCounts++ ;
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <canvas id="canvas" width="450" height="450"></canvas>
+</body>
+</html>

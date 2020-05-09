@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta autor='Woody Cai' >
+    <title>地图定位</title>
+    <style>
+        /*
+         *    Des     :地图定位
+         *    Author  :Woody Cai
+         *    Time    :2017年04月28日15:51:41
+         */
+         .map-wrap { width: 502px; margin: 0 auto; }
+         .location-info { width: 100%; border: 1px solid #ccc; line-height: 30px; height:30px; font-size: 16px; color: #666; box-sizing: border-box; }
+         #bdMap {margin-top:10px; background: #fff; border: 1px solid #41ab82; width: 500px; height: 500px;}
+    </style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=HpsEPuyL0YZhuaIMgxISojsX"></script>
+    <script>
+        window.onload = function(){
+            /*
+             *    Des     :地图定位
+             *    Author  :Woody Cai
+             *    Time    :2017年04月28日15:51:41
+             */
+
+            // 获取当前定位信息
+            var oInfo = document.querySelector('.location-info');
+            if(navigator.geolocation){
+                navigator.geolocation.getCurrentPosition(function(position){
+                    oInfo.innerHTML = '维度：'+position.coords.latitude + ',经度：'+position.coords.longitude;
+                    bdMap(position.coords.latitude,position.coords.longitude);
+                },function(err){
+                    // 获取位置失败
+                    console.log(err)
+                })
+            }else{
+                alert('该浏览器不支持获取地理位置')
+            }
+
+            // 百度地图
+            // 百度的坐标是 经度，维度
+            function bdMap(x,y){
+                var map = new BMap.Map("bdMap");          // 创建地图实例
+                var point = new BMap.Point(y, x);         // 创建点坐标
+                map.centerAndZoom(point, 15);             // 初始化地图，设置中心点坐标和地图级别
+                var marker = new BMap.Marker(point);      // 创建标注
+                map.addOverlay(marker);                   // 标注添加到地图上
+            }
+
+        }
+    </script>
+</head>
+<body>
+    <div class="map-wrap">
+        <div class="location-info"></div>
+        <div id='bdMap'></div>
+    </div>
+</body>
+</html>

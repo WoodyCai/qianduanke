@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta autor='Woody Cai' >
+    <title>Canvas-行走的小人</title>
+    <style>
+        /*
+         *    Des     :Canvas-行走的小人
+         *    Author  :Woody Cai
+         *    Time    :2017年04月28日15:51:41
+         */
+         .canvas-wrap { width: 502px; margin: 0 auto; }
+         #canvas {margin-top:10px; background: #78c380; border: 1px solid #333; }
+    </style>
+    <script>
+    window.onload = function(){
+        /*
+         *    Des     :Canvas-行走的小人
+         *    Author  :Woody Cai
+         *    Time    :2017年04月28日15:51:41
+         */
+
+        // 画小人
+        // var oC = document.querySelecor
+        var oC = document.querySelector('#canvas');
+        var gd = oC.getContext('2d');
+        var dX=100
+            dY=100;
+        var oImg = new Image();    // 小人图片
+        oImg.src = './images/man.jpg';
+
+
+        function fnDrawMan(sX,sY,x,y){
+            gd.clearRect(0,0,oC.width,oC.height);
+            gd.drawImage(
+                oImg,
+                sX,sY,32,32,
+                x,y,32,32
+            )
+        }
+        oImg.onload = function(){
+            fnDrawMan(0,0,dX,dY);
+        }
+
+        // 键盘控制小人运动
+        var walkTimer = null,
+            iLeft = 0;
+        document.onkeydown = function(ev){
+            switch( ev.keyCode ){
+                case 32:    // 空格键
+                    clearInterval(walkTimer);
+                    break;
+                case 37:    // 左键
+                    clearInterval(walkTimer);
+                    walkTimer = setInterval(function(){
+                        // 走到左侧清除定时器
+                        if( dX < 0 ){
+                            clearInterval(walkTimer);
+                            return ;
+                        }
+                        dX-=5;
+                        iLeft++;
+                        if( iLeft>2 ){
+                            iLeft=0;
+                        }
+                        fnDrawMan(iLeft*32,32,dX,dY);
+                    },100)
+                    break;
+                case 38:    // 上键
+                    clearInterval(walkTimer);
+                    walkTimer = setInterval(function(){
+                        // 走到顶部清除定时器
+                        if( dY < 0 ){
+                            clearInterval(walkTimer);
+                            return ;
+                        }
+                        dY-=5;
+                        iLeft++;
+                        if( iLeft>2 ){
+                            iLeft=0;
+                        }
+                        fnDrawMan(iLeft*32,96,dX,dY);
+                    },100)
+                    break;
+                case 39:    // 右键
+                    clearInterval(walkTimer);
+                    walkTimer = setInterval(function(){
+                        // 走到右侧清除定时器
+                        if( dX > oC.width-32 ){
+                            clearInterval(walkTimer);
+                            return ;
+                        }
+                        dX+=5;
+                        iLeft++;
+                        if( iLeft>2 ){
+                            iLeft=0;
+                        }
+                        fnDrawMan(iLeft*32,64,dX,dY);
+                    },100)
+                    break;
+                case 40:    // 下键
+                    clearInterval(walkTimer);
+                    walkTimer = setInterval(function(){
+                        // 走到底部清除定时器
+                        if( dY > oC.height -32 ){
+                            clearInterval(walkTimer);
+                            return ;
+                        }
+                        dY+=5;
+                        iLeft++;
+                        if( iLeft>2 ){
+                            iLeft=0;
+                        }
+                        fnDrawMan(iLeft*32,0,dX,dY);
+                    },100)
+                    break;
+            }
+        }
+
+    }
+    </script>
+</head>
+<body>
+    <div class="canvas-wrap">
+        安键盘的上下左右键，可以控制小人的走向，空格键停止
+        <canvas id="canvas" width="500" height="500"></canvas>
+    </div>
+</body>
+</html>
